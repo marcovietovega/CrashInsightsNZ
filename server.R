@@ -1,19 +1,16 @@
+# server.R
 library(shiny)
+library(shinydashboard)
+library(plotly)
 
-# Define server logic required to draw a histogram
-function(input, output, session) {
+source("tabs/home_server.R")
+source("tabs/ml_server.R")
+source("tabs/download_server.R")
+source("tabs/compare_server.R")
 
-    output$distPlot <- renderPlot({
-
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-
-    })
-
+server <- function(input, output, session) {
+  callModule(home_server, "home")
+  callModule(ml_server, "ml")
+  callModule(download_server, "download")
+  callModule(compare_server, "compare")
 }

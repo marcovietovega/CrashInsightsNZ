@@ -1,0 +1,13 @@
+name: crashinsightsnz
+title: CrashInsightsNZ
+username: mv03790
+account: mv03790
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12116993
+bundleId: 8695506
+url: https://mv03790.shinyapps.io/crashinsightsnz/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: data-100.csv|data.csv
