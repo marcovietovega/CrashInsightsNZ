@@ -9,7 +9,7 @@ home_ui <- function(id) {
       div(class = "value-box-wrapper", valueBoxOutput(ns("top_region_3"), width = 3))
     ),
     fluidRow(
-      div(class = "filters",
+      div(
           box(
             title = "Filters", status = "warning", solidHeader = TRUE,
             width = 12,
