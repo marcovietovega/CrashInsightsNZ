@@ -4,109 +4,147 @@ home_server <- function(input, output, session) {
   library(dplyr)
   library(DBI)
   library(RSQLite)
+  library(plotly)
+  library(shinyWidgets)
   
-  con <- dbConnect(RSQLite::SQLite(), "./crash_data.sqlite")
+  con <- dbConnect(SQLite(), "crash_data.sqlite")
   
-  # Get unique values for filters
-  unique_values <- reactive({
-    query <- "SELECT DISTINCT region, crashSeverity, weatherA FROM home_crash_data"
-    dbGetQuery(con, query)
+  unique_regions <- reactive({
+    dbGetQuery(con, "SELECT region FROM regions")
+  })
+  
+  unique_years <- reactive({
+    dbGetQuery(con, "SELECT crashYear FROM years")
   })
   
   output$region_filter <- renderUI({
-    req(unique_values())
-    selectInput(ns("region"), "Select Region:", choices = c("All", unique(unique_values()$region)))
+    req(unique_regions())
+    pickerInput(
+      ns("region"),
+      "Select Region:",
+      choices = unique_regions()$region,
+      selected = unique_regions()$region,
+      multiple = TRUE,
+      options = pickerOptions(actionsBox = TRUE)
+    )
   })
   
-  output$severity_filter <- renderUI({
-    req(unique_values())
-    selectInput(ns("severity"), "Select Crash Severity:", choices = c("All", unique(unique_values()$crashSeverity)))
+  output$year_filter <- renderUI({
+    req(unique_years())
+    years <- unique_years()$crashYear
+    sliderInput(
+      ns("year_filter"),
+      "Select Year Range:",
+      min = min(years),
+      max = max(years),
+      value = c(min(years), max(years)),
+      step = 1,
+      sep = ""
+    )
   })
   
-  output$weather_filter <- renderUI({
-    req(unique_values())
-    selectInput(ns("weather"), "Select Weather Conditions:", choices = c("All", unique(unique_values()$weatherA)))
-  })
-  
-  filteredData <- reactive({
-    query <- "SELECT * FROM home_crash_data WHERE 1=1"
+  filtered_data_totalcrashes <- reactive({
+    req(input$region, input$year_filter)
     
-    if (input$region != "All") {
-      query <- paste(query, sprintf("AND region = '%s'", input$region))
-    }
-    if (input$severity != "All") {
-      query <- paste(query, sprintf("AND crashSeverity = '%s'", input$severity))
-    }
-    if (input$weather != "All") {
-      query <- paste(query, sprintf("AND weatherA = '%s'", input$weather))
+    query <- "SELECT sum(total_crashes) total_crashes FROM total_crashes_by_region WHERE crashYear BETWEEN ? AND ?"
+    params <- list(input$year_filter[1], input$year_filter[2])
+    
+    if (length(input$region) < length(unique_regions()$region)) {
+      regions_query <- paste0(" AND region IN (", paste(rep("?", length(input$region)), collapse = ", "), ")")
+      query <- paste0(query, regions_query)
+      params <- c(params, input$region)
     }
     
-    dbGetQuery(con, query)
+    dbGetQuery(con, query, params = params)
+  })
+  
+  filtered_data_totals_by_region <- reactive({
+    req(input$region, input$year_filter)
+    
+    query <- "SELECT region, sum(total_crashes) total_crashes FROM total_crashes_by_region WHERE crashYear BETWEEN ? AND ?"
+    params <- list(input$year_filter[1], input$year_filter[2])
+    
+    if (length(input$region) < length(unique_regions()$region)) {
+      regions_query <- paste0(" AND region IN (", paste(rep("?", length(input$region)), collapse = ", "), ")")
+      query <- paste0(query, regions_query)
+      params <- c(params, input$region)
+    }
+    query <- paste0(query, " GROUP BY region")
+    dbGetQuery(con, query, params = params)
   })
   
   output$total_crashes <- renderValueBox({
-    total_crashes <- nrow(filteredData())
-    valueBox(total_crashes, "Total Crashes", icon = icon("car-crash"), color = "purple")
-  })
-  
-  top_regions <- reactive({
-    req(filteredData())
-    filteredData() %>%
-      count(region) %>%
-      arrange(desc(n)) %>%
-      slice(1:3)
+    req(filtered_data_totalcrashes())
+    valueBox(
+      value = filtered_data_totalcrashes()$total_crashes,
+      subtitle = "Total Crashes",
+      icon = icon("car-crash"),
+      color = "purple"
+    )
   })
   
   output$top_region_1 <- renderValueBox({
-    req(top_regions())
-    valueBox(top_regions()$n[1], paste("Crashes in", top_regions()$region[1]), icon = icon("map-marker-alt"), color = "orange")
+    req(filtered_data_totals_by_region())
+    
+    data <- filtered_data_totals_by_region() %>%
+      arrange(desc(total_crashes)) %>%
+      slice_head(n = 1)
+    
+    valueBox(
+      value = data$total_crashes,
+      subtitle = paste("Crashes in", data$region),
+      icon = icon("map-marker-alt"),
+      color = "orange"
+    )
   })
   
   output$top_region_2 <- renderValueBox({
-    req(top_regions())
-    valueBox(top_regions()$n[2], paste("Crashes in", top_regions()$region[2]), icon = icon("map-marker-alt"), color = "green")
+    req(filtered_data_totals_by_region())
+    
+    data <- filtered_data_totals_by_region() %>%
+      arrange(desc(total_crashes)) %>%
+      slice_head(n = 2) %>%
+      slice_tail(n = 1)
+    
+    valueBox(
+      value = data$total_crashes,
+      subtitle = paste("Crashes in", data$region),
+      icon = icon("map-marker-alt"),
+      color = "green"
+    )
   })
   
   output$top_region_3 <- renderValueBox({
-    req(top_regions())
-    valueBox(top_regions()$n[3], paste("Crashes in", top_regions()$region[3]), icon = icon("map-marker-alt"), color = "blue")
+    req(filtered_data_totals_by_region())
+    
+    data <- filtered_data_totals_by_region() %>%
+      arrange(desc(total_crashes)) %>%
+      slice_head(n = 3) %>%
+      slice_tail(n = 1)
+    
+    valueBox(
+      value = data$total_crashes,
+      subtitle = paste("Crashes in", data$region),
+      icon = icon("map-marker-alt"),
+      color = "blue"
+    )
   })
   
   output$plot1 <- renderPlotly({
-    req(filteredData())
-    severity_counts <- filteredData() %>%
-      count(crashSeverity)
-    plot_ly(severity_counts, labels = ~crashSeverity, values = ~n, type = 'pie', 
-            marker = list(colors = c('#5A67D8', '#ECC94B', '#2D3748', '#4A5568', '#2B6CB0'))) %>%
-      layout(showlegend = TRUE)
+    req(filtered_data_totals_by_region())
+    plot_ly(
+      filtered_data_totals_by_region(),
+      x = ~region,
+      y = ~total_crashes,
+      type = "bar"
+    ) %>%
+      layout(
+        xaxis = list(title = "Regions", tickangle = -45),
+        yaxis = list(title = "Number of Crashes"),
+        margin = list(b = 1)
+      )
   })
   
-  output$plot2 <- renderPlotly({
-    req(filteredData())
-    severity_counts <- filteredData() %>%
-      count(crashSeverity)
-    plot_ly(severity_counts, x = ~crashSeverity, y = ~n, type = 'bar', marker = list(color = '#ECC94B')) %>%
-      layout(xaxis = list(title = "Crash Severity"), yaxis = list(title = "Number of Crashes"), showlegend = FALSE)
-  })
-  
-  output$plot3 <- renderPlotly({
-    req(filteredData())
-    region_counts <- filteredData() %>%
-      count(region)
-    plot_ly(region_counts, x = ~region, y = ~n, type = 'bar', marker = list(color = '#5A67D8')) %>%
-      layout(xaxis = list(title = "Region"), yaxis = list(title = "Number of Crashes"), showlegend = FALSE)
-  })
-  
-  output$plot4 <- renderPlotly({
-    req(filteredData())
-    weather_counts <- filteredData() %>%
-      count(weatherA)
-    plot_ly(weather_counts, labels = ~weatherA, values = ~n, type = 'pie', 
-            marker = list(colors = c('#5A67D8', '#ECC94B', '#2D3748', '#4A5568', '#2B6CB0'))) %>%
-      layout(showlegend = TRUE)
-  })
-  
-  # Close the database connection when the session ends
   session$onSessionEnded(function() {
     dbDisconnect(con)
   })
