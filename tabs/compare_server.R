@@ -9,7 +9,7 @@ compare_server <- function(input, output, session) {
   
   # Get unique values for region filters
   unique_regions <- reactive({
-    query <- "SELECT DISTINCT region FROM home_crash_data"
+    query <- "SELECT DISTINCT region FROM crash_data"
     dbGetQuery(con, query)
   })
   
@@ -20,13 +20,13 @@ compare_server <- function(input, output, session) {
   
   filteredData1 <- reactive({
     req(input$region1)
-    query <- paste("SELECT * FROM home_crash_data WHERE region = '", input$region1, "'", sep = "")
+    query <- paste("SELECT * FROM crash_data WHERE region = '", input$region1, "'", sep = "")
     dbGetQuery(con, query)
   })
   
   filteredData2 <- reactive({
     req(input$region2)
-    query <- paste("SELECT * FROM home_crash_data WHERE region = '", input$region2, "'", sep = "")
+    query <- paste("SELECT * FROM crash_data WHERE region = '", input$region2, "'", sep = "")
     dbGetQuery(con, query)
   })
   

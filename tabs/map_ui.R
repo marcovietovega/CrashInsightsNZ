@@ -1,4 +1,4 @@
-ml_ui <- function(id) {
+map_ui <- function(id) {
   ns <- NS(id)
   tabPanel("Machine Learning",
            fluidPage(

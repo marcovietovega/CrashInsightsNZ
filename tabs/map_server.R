@@ -1,3 +1,3 @@
-ml_server <- function(input, output, session) {
+map_server <- function(input, output, session) {
   # Add server logic for Machine Learning tab here
 }
