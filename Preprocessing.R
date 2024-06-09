@@ -68,9 +68,16 @@ dbWriteTable(con, "weather", data.frame(weather = weather), overwrite = TRUE)
 dbExecute(con, "UPDATE total_crashes_by_region SET region = REPLACE(region, ' Region', '')")
 dbExecute(con, "UPDATE regions SET region = REPLACE(region, ' Region', '')")
 dbExecute(con, "UPDATE crash_data SET weatherA = 'Unknown' where weatherA = 'Null'")
-
-
-select 
+dbExecute(con, "CREATE TABLE fatal_count_by_region AS
+SELECT region, SUM(fatalCount) AS total_fatal_count
+FROM crash_data
+GROUP BY region;")
+dbExecute(con, "CREATE TABLE average_speed_limit_by_region AS
+SELECT region, round(AVG(speedLimit)) AS average_speed_limit
+FROM crash_data
+GROUP BY region;")
+dbExecute(con, "CREATE TABLE total_crashes_holiday_region AS
+SELECT region, holiday, count(*) as total_crashes FROM crash_data where holiday != '' group by region, holiday")
 
 
 dbExecute(con, "UPDATE crash_data SET vehicleTypes = TRIM(
@@ -100,9 +107,9 @@ dbListTables(con)
 
 dbGetQuery(con, "SELECT replace(region, ' Region', '') region, crashYear, replace(crashSeverity, ' Crash', '') crashSeverity, weatherA, COUNT(*) total_crashes FROM crash_data GROUP BY region, crashYear, crashSeverity, weatherA")
 dbGetQuery(con, "SELECT crashyear, crashSeverity, light, region, speedLimit, weatherA as weather, NumberOfLanes, roadSurface, tlaName, crashLocation1, crashLocation2, longitude, latitude FROM crash_data")
-
+dbGetQuery(con, "SELECT * from vehicle_totals")
 #delete empty row from region table
-dbExecute(con, "DELETE FROM crash_data WHERE region = ''")
+dbExecute(con, "DROP TABLE total_crashes_holiday_region")
 
 #update the regions, removing the word region
 dbExecute(con, "UPDATE total_crashes_by_region SET region = REPLACE(region, ' Region', '')")
