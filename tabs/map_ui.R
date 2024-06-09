@@ -1,4 +1,3 @@
-# tabs/map_ui.R
 map_ui <- function(id) {
   ns <- NS(id)
   

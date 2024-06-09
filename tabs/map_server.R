@@ -43,7 +43,7 @@ map_server <- function(input, output, session) {
       "Select Year Range:",
       min = min(years),
       max = max(years),
-      value = c(2020, 2022),
+      value = c(2021, 2022),
       step = 1,
       sep = "",
       ticks = FALSE
@@ -81,7 +81,7 @@ map_server <- function(input, output, session) {
         input$severity,
         input$weather)
     
-    query <- "SELECT longitude, latitude, crashSeverity, crashYear, region FROM crash_data WHERE crashYear BETWEEN ? AND ?"
+    query <- "SELECT longitude, latitude, crashSeverity, crashYear, region, weatherA as weather FROM crash_data WHERE crashYear BETWEEN ? AND ?"
     params <- list(input$year_filter[1], input$year_filter[2])
     
     if (length(input$region) < length(unique_regions()$region)) {
@@ -122,7 +122,9 @@ map_server <- function(input, output, session) {
         "<br>Year:",
         crashYear,
         "<br>Severity:",
-        crashSeverity
+        crashSeverity,
+        "<br>Weather:",
+        weather
       ),
       type = 'scattermapbox',
       mode = 'markers',
@@ -134,10 +136,10 @@ map_server <- function(input, output, session) {
         mapbox = list(
           style = 'mapbox://styles/mapbox/streets-v11',
           accesstoken = 'pk.eyJ1IjoibXYwMzc5MCIsImEiOiJjbHg3MjYyaGgwa3hwMmlvbGJlM3Z6dXhsIn0.kYiQaXqnRpt-AQpTNwZo8Q',
-          zoom = 6,
+          zoom = 5.2,
           center = list(
-            lon = mean(crash_data()$longitude, na.rm = TRUE),
-            lat = mean(crash_data()$latitude, na.rm = TRUE)
+            lon = 174.8860,
+            lat = -40.9006
           )
         ),
         margin = list(

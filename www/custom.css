@@ -60,6 +60,10 @@ body {
   padding: 0 4px !important;
 }
 
+.col-sm-12 .box-body .row{
+  padding: 8px !important;
+}
+
 .shiny-download-link {
   margin-bottom: 8px !important;
 }

@@ -1,12 +1,12 @@
+library(dplyr)
+library(DBI)
+library(RSQLite)
+library(plotly)
+library(shinyWidgets)
+library(RColorBrewer)
+
 home_server <- function(input, output, session) {
   ns <- session$ns
-  library(dplyr)
-  library(DBI)
-  library(RSQLite)
-  library(plotly)
-  library(shinyWidgets)
-  library(RColorBrewer)
-  library(viridis)
   
   con <- dbConnect(SQLite(), "crash_data.sqlite")
   
