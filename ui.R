@@ -16,7 +16,7 @@ ui <- dashboardPage(
       tabName = "compare",
       icon = icon("balance-scale")
     ),
-    menuItem("Map", tabName = "map", icon = icon("cogs")),
+    menuItem("Map", tabName = "map", icon = icon("map")),
     menuItem(
       "Data Download",
       tabName = "download",

@@ -53,7 +53,8 @@ home_server <- function(input, output, session) {
       max = max(years),
       value = c(min(years), max(years)),
       step = 1,
-      sep = ""
+      sep = "",
+      ticks = FALSE
     )
   })
   
@@ -428,7 +429,7 @@ home_server <- function(input, output, session) {
     
     valueBox(
       value = data$total_crashes,
-      subtitle = paste("Crashes in", data$region),
+      subtitle = paste("Region #1: ", data$region),
       icon = icon("map-marker-alt"),
       color = "orange"
     )
@@ -444,7 +445,7 @@ home_server <- function(input, output, session) {
     
     valueBox(
       value = data$total_crashes,
-      subtitle = paste("Crashes in", data$region),
+      subtitle = paste("Region #2: ", data$region),
       icon = icon("map-marker-alt"),
       color = "green"
     )
@@ -460,7 +461,7 @@ home_server <- function(input, output, session) {
     
     valueBox(
       value = data$total_crashes,
-      subtitle = paste("Crashes in", data$region),
+      subtitle = paste("Region #3: ", data$region),
       icon = icon("map-marker-alt"),
       color = "blue"
     )
@@ -506,7 +507,7 @@ home_server <- function(input, output, session) {
   
   output$pie_weather <- renderPlotly({
     req(filtered_data_totals_by_weather())
-    colors <- rev(brewer.pal(n = 10, name = "Blues"))
+    colors <- rev(brewer.pal(n = 9, name = "Blues"))
     
     plot_ly(
       filtered_data_totals_by_weather(),
@@ -542,7 +543,7 @@ home_server <- function(input, output, session) {
   
   output$stacked_light_weather <- renderPlotly({
     req(filtered_data_light_weather())
-    colors <- rev(brewer.pal(n = 10, name = "Blues"))
+    colors <- rev(brewer.pal(n = 9, name = "Blues"))
     
     plot_ly(
       filtered_data_light_weather(),
@@ -561,7 +562,7 @@ home_server <- function(input, output, session) {
   
   output$bubble_speed <- renderPlotly({
     req(filtered_data_speedlimit())
-    colors <- (brewer.pal(n = 10, name = "Blues"))
+    colors <- (brewer.pal(n = 9, name = "Blues"))
     
     plot_ly(
       data = filtered_data_speedlimit(),

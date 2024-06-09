@@ -56,7 +56,7 @@ body {
   border-top-right-radius: 15px !important;
 }
 
-.plot-box-wrapper .col-sm-4, .col-sm-8, .col-sm-6  {
+.plot-box-wrapper .col-sm-4, .col-sm-8, .col-sm-6, .col-sm-12  {
   padding: 0 4px !important;
 }
 
@@ -65,21 +65,32 @@ body {
 }
 
 .small-box.bg-purple{
-  background-color: #3A6FB0 !important;
+  background-color: #194a7a !important;
   color: white !important;
 }
 
 .small-box.bg-orange{
-  background-color: #568FC0 !important;
+  background-color: #476f95 !important;
   color: white !important;
 }
 
 .small-box.bg-green{
-  background-color: #A7C9DE !important;
+  background-color: #7593af !important;
   color: white !important;
 }
 
 .small-box.bg-blue{
-  background-color: #C6D8EB !important;
+  background-color: #a3b7ca !important;
   color: white !important;
 }
+
+.filter-box {
+          padding: 10px;
+          background-color: rgba(255, 255, 255, 0.8); /* semi-transparent background */
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 1000; /* ensure the filters are above the map */
+        }
