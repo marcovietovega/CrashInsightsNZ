@@ -63,7 +63,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total1) && total1 >= total2) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total1), "Please select a region", total1),
+      value = ifelse(is.na(total1), "Please select a region", format(total1, big.mark = ",")),
       subtitle = ifelse(is.na(total1), "Total Crashes", paste("Total Crashes in", input$region1)),
       icon = icon("car-crash"),
       color = color
@@ -78,7 +78,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total2) && total2 >= total1) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total2), "Please select a region", total2),
+      value = ifelse(is.na(total2), "Please select a region", format(total2, big.mark = ",")),
       subtitle = ifelse(is.na(total2), "Total Crashes", paste("Total Crashes in", input$region2)),
       icon = icon("car-crash"),
       color = color
@@ -100,12 +100,16 @@ compare_server <- function(input, output, session) {
     
     if (input$region1 != "") {
       data <- yearly_crashes_region(input$region1)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~crashYear, 
               y = ~total_crashes, 
               type = 'scatter', 
               mode = 'lines',
-              fill = 'tozeroy') %>%
+              fill = 'tozeroy',
+              text = ~formatted_total_crashes,
+              hovertemplate = '(%{x}; %{text}<extra></extra>)') %>%
         layout(xaxis = list(title = "Year"), 
                yaxis = list(title = "Total Crashes", range = c(0, max_crashes)))
     }
@@ -120,12 +124,16 @@ compare_server <- function(input, output, session) {
     
     if (input$region2 != "") {
       data <- yearly_crashes_region(input$region2)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~crashYear, 
               y = ~total_crashes, 
               type = 'scatter', 
               mode = 'lines',
-              fill = 'tozeroy') %>%
+              fill = 'tozeroy',
+              text = ~formatted_total_crashes,
+              hovertemplate = '(%{x}; %{text}<extra></extra>)') %>%
         layout(xaxis = list(title = "Year"), 
                yaxis = list(title = "Total Crashes", range = c(0, max_crashes)))
     }
@@ -164,7 +172,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total1) && total1 >= total2) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total1), "Please select a region", total1),
+      value = ifelse(is.na(total1), "Please select a region", format(total1, big.mark = ",")),
       subtitle = ifelse(is.na(total1), "Fatalities in Crashes", paste("Fatalities in Crashes in", input$region1)),
       icon = icon("exclamation-triangle"),
       color = color
@@ -180,7 +188,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total2) && total2 >= total1) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total2), "Please select a region", total2),
+      value = ifelse(is.na(total2), "Please select a region", format(total2, big.mark = ",")),
       subtitle = ifelse(is.na(total2), "Fatalities in Crashes", paste("Fatalities in Crashes in", input$region2)),
       icon = icon("exclamation-triangle"),
       color = color
@@ -202,6 +210,8 @@ compare_server <- function(input, output, session) {
     
     if (input$region1 != "") {
       data <- total_severity_region(input$region1)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               labels = ~crashSeverity, 
               values = ~total_crashes, 
@@ -209,7 +219,10 @@ compare_server <- function(input, output, session) {
               hole = 0.5, 
               textinfo = 'label+percent',
               insidetextorientation = 'radial',
-              marker = list(colors = colors))
+              hovertemplate = '%{label}<br>%{percent:.2%}<br>%{customdata}<extra></extra>',
+              texttemplate = "%{percent:.2%}",
+              marker = list(colors = colors),
+              customdata = ~formatted_total_crashes)
     }
   })
   
@@ -222,6 +235,8 @@ compare_server <- function(input, output, session) {
     
     if (input$region2 != "") {
       data <- total_severity_region(input$region2)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               labels = ~crashSeverity, 
               values = ~total_crashes, 
@@ -229,7 +244,10 @@ compare_server <- function(input, output, session) {
               hole = 0.5, 
               textinfo = 'label+percent',
               insidetextorientation = 'radial',
-              marker = list(colors = colors))
+              hovertemplate = '%{label}<br>%{percent:.2%}<br>%{customdata}<extra></extra>',
+              texttemplate = "%{percent:.2%}",
+              marker = list(colors = colors),
+              customdata = ~formatted_total_crashes)
     }
   })
   
@@ -294,6 +312,7 @@ compare_server <- function(input, output, session) {
   }
   
   output$bar_weather_1 <- renderPlotly({
+    req(input$region1, input$region2)
     colors <- rev(brewer.pal(n = 10, name = "Blues"))
 
     data1 <- crashes_weather_region(input$region1)
@@ -303,19 +322,24 @@ compare_server <- function(input, output, session) {
     
     if (input$region1 != "") {
       data <- crashes_weather_region(input$region1)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~weather, 
               y = ~total_crashes, 
               type = 'bar',
               color = ~ weather,
-              colors = colors) %>%
+              colors = colors,
+              hoverinfo = "text",
+              hovertext = ~paste0("(", weather, "; ", formatted_total_crashes,")")
+              ) %>%
         layout(xaxis = list(title = "Weather Conditions"),
                yaxis = list(title = "Total Crashes", range = c(0, max_crashes)))
     }
   })
   
   output$bar_weather_2 <- renderPlotly({
-    req(input$region2)
+    req(input$region1, input$region2)
     colors <- rev(brewer.pal(n = 10, name = "Blues"))
     
     data1 <- if (input$region1 != "") crashes_weather_region(input$region1) else data.frame(crashYear = integer(), total_crashes = integer())
@@ -325,12 +349,17 @@ compare_server <- function(input, output, session) {
     
     if (input$region2 != "") {
       data <- crashes_weather_region(input$region2)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~weather, 
               y = ~total_crashes, 
               type = 'bar',
               color = ~ weather,
-              colors = colors) %>%
+              colors = colors,
+              hoverinfo = "text",
+              hovertext = ~paste0("(", weather, "; ", formatted_total_crashes,")")
+              ) %>%
         layout(xaxis = list(title = "Weather Conditions"),
                yaxis = list(title = "Total Crashes", range = c(0, max_crashes)))
     }
@@ -368,7 +397,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total1) && total1 >= total2) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total1), "Please select a region", total1),
+      value = ifelse(is.na(total1), "Please select a region", format(total1, big.mark = ",")),
       subtitle = ifelse(is.na(total1), "Crashes during Holydays in", paste("Crashes during Holydays in", input$region1)),
       icon = icon("calendar-alt"),
       color = color
@@ -383,7 +412,7 @@ compare_server <- function(input, output, session) {
     color <- if (!is.na(total2) && total2 >= total1) "red" else "purple"
     
     valueBox(
-      value = ifelse(is.na(total2), "Please select a region", total2),
+      value = ifelse(is.na(total2), "Please select a region", format(total2, big.mark = ",")),
       subtitle = ifelse(is.na(total2), "Crashes during Holydays in", paste("Crashes during Holydays in", input$region2)),
       icon = icon("calendar-alt"),
       color = color
@@ -397,6 +426,7 @@ compare_server <- function(input, output, session) {
   }
   
   output$bar_vehicle_region1 <- renderPlotly({
+    req(input$region1, input$region2)
     colors <- rev(brewer.pal(n = 10, name = "Blues"))
     req(input$region1)
     
@@ -407,19 +437,25 @@ compare_server <- function(input, output, session) {
     
     if (input$region1 != "") {
       data <- crashes_vehicle_region(input$region1)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~total_crashes, 
               y = ~vehicleType, 
               type = 'bar', 
               orientation = 'h',
               color = ~ vehicleType,
-              colors = colors) %>%
+              colors = colors,
+              hoverinfo = "text",
+              hovertext = ~paste0("(", vehicleType, "; ", formatted_total_crashes,")")
+              ) %>%
         layout(xaxis = list(title = "Total Crashes", range = c(0, max_crashes)),
                yaxis = list(title = "Vehicle Type"))
     }
   })
   
   output$bar_vehicle_region2 <- renderPlotly({
+    req(input$region1, input$region2)
     colors <- rev(brewer.pal(n = 10, name = "Blues"))
     req(input$region2)
     
@@ -430,13 +466,18 @@ compare_server <- function(input, output, session) {
     
     if (input$region2 != "") {
       data <- crashes_vehicle_region(input$region2)
+      data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+      
       plot_ly(data, 
               x = ~total_crashes, 
               y = ~vehicleType, 
               type = 'bar', 
               orientation = 'h',
               color = ~ vehicleType,
-              colors = colors) %>%
+              colors = colors,
+              hoverinfo = "text",
+              hovertext = ~paste0("(", vehicleType, "; ", formatted_total_crashes,")")
+              ) %>%
         layout(xaxis = list(title = "Total Crashes", range = c(0, max_crashes)),
                yaxis = list(title = "Vehicle Type"))
     }

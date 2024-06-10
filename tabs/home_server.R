@@ -413,7 +413,7 @@ home_server <- function(input, output, session) {
                             0,
                             total_crashes_data$total_crashes)
     valueBox(
-      value = total_crashes,
+      value = format(total_crashes, big.mark = ","),
       subtitle = "Total Crashes",
       icon = icon("car-crash"),
       color = "purple"
@@ -428,7 +428,7 @@ home_server <- function(input, output, session) {
       slice_head(n = 1)
     
     valueBox(
-      value = data$total_crashes,
+      value = format(data$total_crashes, big.mark = ","),
       subtitle = paste("Region #1: ", data$region),
       icon = icon("map-marker-alt"),
       color = "orange"
@@ -444,7 +444,7 @@ home_server <- function(input, output, session) {
       slice_tail(n = 1)
     
     valueBox(
-      value = data$total_crashes,
+      value = format(data$total_crashes, big.mark = ","),
       subtitle = paste("Region #2: ", data$region),
       icon = icon("map-marker-alt"),
       color = "green"
@@ -460,7 +460,7 @@ home_server <- function(input, output, session) {
       slice_tail(n = 1)
     
     valueBox(
-      value = data$total_crashes,
+      value = format(data$total_crashes, big.mark = ","),
       subtitle = paste("Region #3: ", data$region),
       icon = icon("map-marker-alt"),
       color = "blue"
@@ -469,19 +469,24 @@ home_server <- function(input, output, session) {
   
   output$line_trend_years <- renderPlotly({
     req(filtered_data_totals_by_year())
+    
+    data <- filtered_data_totals_by_year()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
     plot_ly(
-      filtered_data_totals_by_year(),
+      data,
       x = ~ crashYear,
       y = ~ total_crashes,
       type = 'scatter',
       mode = 'lines',
-      fill = 'tozeroy'
+      fill = 'tozeroy',
+      text = ~formatted_total_crashes,
+      hovertemplate = '(%{x}; %{text}<extra></extra>)'
     ) %>%
       layout(
         xaxis = list(title = "Year"),
         yaxis = list(title = "Total Crashes", range = c(
-          min(filtered_data_totals_by_year()$total_crashes) - 1000,
-          max(filtered_data_totals_by_year()$total_crashes) + 1000
+          min(data()$total_crashes) - 1000,
+          max(data()$total_crashes) + 1000
         )),
         margin = list(b = 100)
       )
@@ -489,14 +494,20 @@ home_server <- function(input, output, session) {
   
   output$bar_crash_region <- renderPlotly({
     req(filtered_data_totals_by_region())
-    colors <- rev(brewer.pal(n = 10, name = "Blues"))
+    colors <- rev(brewer.pal(n = 9, name = "Blues"))
+    
+    data <- filtered_data_totals_by_region()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+    
     plot_ly(
-      filtered_data_totals_by_region(),
+      data,
       x = ~ region,
       y = ~ total_crashes,
       color = ~ region,
       colors = colors,
-      type = "bar"
+      type = "bar",
+      hoverinfo = "text",
+      hovertext = ~paste0("(", region, "; ", formatted_total_crashes,")")
     ) %>%
       layout(
         xaxis = list(title = "Regions", tickangle = -45),
@@ -509,29 +520,40 @@ home_server <- function(input, output, session) {
     req(filtered_data_totals_by_weather())
     colors <- rev(brewer.pal(n = 9, name = "Blues"))
     
+    data <- filtered_data_totals_by_weather()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+    
     plot_ly(
-      filtered_data_totals_by_weather(),
+      data,
       labels = ~ weather,
       values = ~ total_crashes,
       type = 'pie',
       textinfo = 'percent',
       insidetextorientation = 'radial',
-      marker = list(colors = colors)
+      marker = list(colors = colors),
+      hovertemplate = '%{label}<br>%{percent:.2%}<br>%{customdata}<extra></extra>',
+      texttemplate = "%{percent:.2%}",
+      customdata = ~formatted_total_crashes
     ) %>%
       layout(showlegend = TRUE)
   })
   
   output$stacked_vehicle_severity <- renderPlotly({
     req(filtered_data_vehicle_severity())
-    colors <- (brewer.pal(n = 10, name = "Blues"))
+    colors <- (brewer.pal(n = 9, name = "Blues"))
+    
+    data <- filtered_data_vehicle_severity()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
     
     plot_ly(
-      filtered_data_vehicle_severity(),
+      data,
       x = ~ vehicleType,
       y = ~ total_crashes,
       color = ~ crashSeverity,
       colors = colors,
-      type = 'bar'
+      type = 'bar',
+      hoverinfo = "text",
+      hovertext = ~paste0("(", vehicleType, "; ", formatted_total_crashes,")")
     ) %>%
       layout(
         barmode = 'stack',
@@ -545,13 +567,18 @@ home_server <- function(input, output, session) {
     req(filtered_data_light_weather())
     colors <- rev(brewer.pal(n = 9, name = "Blues"))
     
+    data <- filtered_data_light_weather()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+    
     plot_ly(
-      filtered_data_light_weather(),
+      data,
       x = ~ light,
       y = ~ total_crashes,
       color = ~ weather,
       colors = colors,
-      type = "bar"
+      type = "bar",
+      hoverinfo = "text",
+      hovertext = ~paste0("(", light, "; ", formatted_total_crashes,")")
     ) %>%
       layout(
         xaxis = list(title = "Light Conditions"),
@@ -564,8 +591,11 @@ home_server <- function(input, output, session) {
     req(filtered_data_speedlimit())
     colors <- (brewer.pal(n = 9, name = "Blues"))
     
+    data <- filtered_data_speedlimit()
+    data$formatted_total_crashes <- format(data$total_crashes, big.mark = ",")
+    
     plot_ly(
-      data = filtered_data_speedlimit(),
+      data,
       x = ~ speedLimit,
       y = ~ total_crashes,
       size = ~ total_crashes,
@@ -577,7 +607,9 @@ home_server <- function(input, output, session) {
         sizemode = 'diameter',
         opacity = 0.8
       ),
-      showlegend = FALSE
+      showlegend = FALSE,
+      text = ~formatted_total_crashes,
+      hovertemplate = '(%{x}; %{text}<extra></extra>)'
     ) %>%
       layout(
         xaxis = list(title = "Speed Limit"),
