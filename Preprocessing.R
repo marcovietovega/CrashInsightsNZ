@@ -1,4 +1,3 @@
-# preprocess.R
 library(dplyr)
 library(DBI)
 library(RSQLite)
