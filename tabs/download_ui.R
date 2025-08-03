@@ -1,7 +1,19 @@
+# ============================================================================
+# Download Tab - UI Module
+# ============================================================================
+# UI module for the data download functionality
+# Allows users to filter and download crash data
+
+library(shiny)
+library(shinydashboard)
+library(DT)
+library(shinyWidgets)
+
+#' UI module for data download tab
+#' @param id Module ID for namespacing
+#' @return Shiny UI elements for the download tab
 download_ui <- function(id) {
   ns <- NS(id)
-  
-  library(DT)
   
   fluidPage(fluidRow(
     box(
