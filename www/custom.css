@@ -1,17 +1,50 @@
 
+/* ============================================================================
+   CrashInsightsNZ - Custom Styling
+   ============================================================================
+   Custom CSS for the Shiny dashboard
+   Author: Marco Vieto Vega
+   Date: 2024
+   ========================================================================= */
+
+/* Base Styling */
 body {
   font-family: 'Arial', sans-serif !important;
   background-color: #f8f9fa !important;
 }
 
-.content{
+.content {
   padding: 8px !important;
 }
 
+/* Value Boxes */
 .small-box {
   margin-bottom: 8px !important;
 }
 
+.small-box.bg-purple {
+  background-color: #194a7a !important;
+  color: white !important;
+}
+
+.small-box.bg-orange {
+  background-color: #476f95 !important;
+  color: white !important;
+}
+
+.small-box.bg-green {
+  background-color: #7593af !important;
+  color: white !important;
+}
+
+.small-box.bg-blue {
+  background-color: #a3b7ca !important;
+  color: white !important;
+}
+
+/* Sidebar Styling */
+
+/* Sidebar Styling */
 .sidebar {
   background-color: #495057 !important;
   border-right: 1px solid #23272b !important;
@@ -38,6 +71,7 @@ body {
   color: #17a2b8 !important;
 }
 
+/* Content Boxes */
 .box {
   border-top: 3px solid #17a2b8 !important;
   background-color: #ffffff !important;
@@ -55,6 +89,8 @@ body {
   border-top-left-radius: 15px !important;
   border-top-right-radius: 15px !important;
 }
+
+/* Layout and Spacing */
 
 .plot-box-wrapper .col-sm-4, .col-sm-8, .col-sm-6, .col-sm-12  {
   padding: 0 4px !important;
